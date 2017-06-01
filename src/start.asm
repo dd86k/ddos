@@ -16,6 +16,8 @@ CHECKSUM		equ		-(MAGIC + FLAGS)
 MODULEALIGN		equ		1
 MEMINFO			equ		2
 
+;STACKSIZE	equ	0x4000	; Nice little stack of 16 KB
+
 ; We could add a section, a label, and an alignment, but we do not currently
 ; need those. They absolutely do need to be at the very start of the binary for
 ; GRUB.
@@ -24,7 +26,6 @@ dd FLAGS
 dd CHECKSUM
 
 section .text
-;STACKSIZE	equ	0x4000	; Nice little stack of 16 KB
 
 start:
 	cli			; Clear Interrupts

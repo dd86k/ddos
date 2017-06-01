@@ -8,6 +8,8 @@
 
 module Kernel.main;
 
+private import Kernel.keyboard;
+
 private:
 extern(C) void* _Dmodule_ref;
 
@@ -21,9 +23,13 @@ extern(C) void* _Dmodule_ref;
  */
 extern(C) void main(uint magic, uint mistruc) {
 	PRINTLN("Booting OS...");
-	PRINTLN;
-	PRINTLN("Hi");
-	for (;;) { }
+	//asm { sti; }
+	//InitiateKeyboard;
+	/*while(1) {
+		char c = getc;
+		PRINT(c);
+	}*/
+	for(;;){}
 }
 
 /******************************************************************************
@@ -144,25 +150,39 @@ enum : ubyte {
 
 /// Print to screen.
 /// Params: s = String
-extern(C) void PRINT(const char[] s) {
+void PRINT(const char[] s) {
 	const size_t l = s.length;
 	for (size_t i = 0; i < l; ++i, ++CURSOR_X) {
 		if (CURSOR_X >= MAX_COLS)
 			CURSOR_NL;
+//TODO: Improve addressing
 		*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2) = s[i];
 		*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2 + 1) = CURRENT_COLOR;
 	}
 }
 
-extern(C) void PRINTLN(const char[] s = null) {
+void PRINT(char c) {
+	++CURSOR_X;
+	*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2) = c;
+	*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2 + 1) = CURRENT_COLOR;
+	if (CURSOR_X >= MAX_COLS)
+		CURSOR_NL;
+}
+
+void PRINTLN(const char[] s = null) {
 	if (s) PRINT(s);
+	CURSOR_NL;
+}
+
+void PRINTLN(char c) {
+	PRINT(c);
 	CURSOR_NL;
 }
 
 /// Clears the screen buffer.
 extern(C) void CLEAR() {
-	const size_t l = MAX_COLS * MAX_ROWS * 2;
-	for (int i = 0; i < l; ++i) *(VIDEO_ADR + i) = 0;
+	const size_t l = MAX_COLS * MAX_ROWS;
+	for (int i = 0; i < l; i += 2) *(VIDEO_ADR + i) = 0;
 }
 
 /*extern(C) void SETCOLOR(ubyte b) {
@@ -198,4 +218,8 @@ extern(C) void CURSOR_NL() {
 		++CURSOR_Y;
 		//TODO: Add Scroll here
 	}
+}
+extern(C) void CURSOR_RL() {
+	CURSOR_X = 0;
+//TODO: Check if '\r' checks output under Linux
 }
