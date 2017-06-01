@@ -4,16 +4,16 @@ ENTRY(start)
 SECTIONS {
     . = 0x00100000;
 
-    .text ALIGN (0x1000) : {
+    .text : {
         *(.multiboot)
         *(.text)
     }
 
-    .rodata ALIGN (0x1000) : {
+    .rodata : {
         *(.rodata)
     }
 
-    .data ALIGN (0x1000) : {
+    .data : {
         data = .; _data = .; __data = .;
         *(.data)
         start_ctors = .; *(.ctors)   end_ctors = .;

@@ -9,7 +9,7 @@
 
 default:
 	@make asm
-	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -of=bin/kernel.o src/*.d
+	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -of=bin/kernel.o src/Kernel/*.d
 	@make link
 
 all:

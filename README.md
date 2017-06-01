@@ -21,7 +21,7 @@ I'll complete this list later on.
 # Compiling the project
 
 ## Requirements
-All these tools are available for free.
+All the required tools are available for free.
 
 - LDC (LLVM D Compiler)
   - It was possible with GDC but there is Intel-styled inline assembler.

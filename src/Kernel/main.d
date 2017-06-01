@@ -6,7 +6,7 @@
  * All the following subroutines follow the C calling convention.
  */
 
-module Kernel.boot;
+module Kernel.main;
 
 private:
 extern(C) void* _Dmodule_ref;
@@ -60,6 +60,7 @@ extern(C) void* malloc(size_t bytes) {
  */
 extern(C) void* memset(void* ptr, int val, size_t num) {
 //CHECK: Does ptr's value change on return?
+//TODO: Test memset
 	const ubyte v = val & 0xFF;
 	ubyte* p = cast(ubyte*)ptr;
 	for (const void* limit = p + num; p < limit; ++p) *p = v;
@@ -72,7 +73,7 @@ extern(C) void* memmove(void* des, const void* src, size_t num) {
 	ubyte* d = cast(ubyte*)des;
 	const ubyte* s = cast(const ubyte*)des;
 
-	
+
 
 	return des;
 }
