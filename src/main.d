@@ -29,7 +29,7 @@ extern(C) void main(uint magic, uint mistruc) {
 /******************************************************************************
  * STANDARD LIBRARY
  ******************************************************************************/
-//module Kernel.stdlib; or what
+//module Kernel.c.stdlib; or what
 
 //https://dlang.org/phobos/core_stdc_string.html
 
@@ -48,7 +48,7 @@ extern(C) void* malloc(size_t bytes) {
 /******************************************************************************
  * STRING LIBRARY
  ******************************************************************************/
-//module Kernel.string; or what
+//module Kernel.c.string; or what
 
 /**
  * Set a memory region with a byte value.
@@ -68,8 +68,11 @@ extern(C) void* memset(void* ptr, int val, size_t num) {
 
 extern(C) void* memmove(void* des, const void* src, size_t num) {
 //CHECK: Does des' value change on return?
+//TODO: memmove
 	ubyte* d = cast(ubyte*)des;
 	const ubyte* s = cast(const ubyte*)des;
+
+	
 
 	return des;
 }

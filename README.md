@@ -4,10 +4,13 @@ Hi! I'm making a kernel+OS for myself, mostly for educational reasons, like gett
 
 I also want to revive the MS-DOS feel in an 32-bit (and possibly 64-bit) environment.
 
-| Can you | |
+| Can you [...] | yet?  |
 |---|---|
 | Use it? | No |
 | Install it? | No |
+| Run programs? | No |
+| Compile stuff? | No |
+| Play games? | No |
 
 # TODO
 
@@ -20,7 +23,8 @@ I'll complete this list later on.
 ## Requirements
 All these tools are available for free.
 
-- LDC (LLVM D Compiler) or GDC (GNU D Compiler)
+- LDC (LLVM D Compiler)
+  - It was possible with GDC but there is Intel-styled inline assembler.
 - NASM (the Netwide Assembler)
 - ld (from GNU/binutils)
 
@@ -33,8 +37,6 @@ All these tools are available for free.
 ## Compiling
 
 By default, running `make` with compile everything into `bin/`.
-
-If LDC2 doesn't work for you, you can try `make with_gdc` but beware GDC does not support the Intel syntax and may likely crash on compilation if any asm statements are used.
 
 ## Making the ISO
 

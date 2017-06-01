@@ -1,29 +1,19 @@
-# 
-
 .PHONY: default iso test clean all asm link with_gdc all_gdc
 
 #################
 # COMPILATION
 #################
+# with_gdc:
+#gdc -m32 -O3 -nodefaultlibs -mno-red-zone -fno-bounds-check -frelease -c src/*.d -o bin/kernel.o -g
+#_d_dso_registry: rt.sections_elf_shared.CompilerDSOData
 
 default:
 	@make asm
-#_d_dso_registry: rt.sections_elf_shared.CompilerDSOData
 	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -of=bin/kernel.o src/*.d
-	@make link
-
-with_gdc:
-	@make asm
-	gdc -m32 -O3 -nodefaultlibs -mno-red-zone -fno-bounds-check -frelease -c src/*.d -o bin/kernel.o -g
 	@make link
 
 all:
 	@make
-	@make iso
-	@make test
-
-all_gdc:
-	@make with_gdc
 	@make iso
 	@make test
 
@@ -54,4 +44,5 @@ test:
 
 clean:
 	rm -rf bin/*
+	rm isoroot/boot/kerbel.bin
 	rm ddos.iso
