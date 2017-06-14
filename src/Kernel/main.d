@@ -12,24 +12,33 @@ private import Kernel.keyboard;
 
 private:
 extern(C) void* _Dmodule_ref;
+extern(C) uint GRUBMAGIC; /// GRUB magic from start.asm
 
 /**
- * Main starting point of the kernel.
- * The starting point has the responsability of setting up the tables (e.g.
- * IDT, etc.), and setting up the environment (e.g. gather information).
+ * Main starting point of the kernel from any possible bootloader.
+ * The bootloader MUST provide with two piece of information:
+ * - MAGIC (uint, EAX)
+ * - MULTIBOOT STRUCTURE (void*, EBX)
  * Params:
- *   magic = Multiboot magic (see MAGIC in start.asm)
- *   mistruc = Multiboot structure location
+ *   magic = Multiboot magic (EAX)
+ *   mistruc = Multiboot structure location (EBX)
  */
-extern(C) void main(uint magic, uint mistruc) {
+extern(C) void main(uint magic, uint mbstruct) {
+	PRINT("BOOTLOADER: ");
+	switch (magic) {
+		case GRUBMAGIC: PRINTLN("GRUB"); break;
+		default: PRINTLN("UNKNOWN");
+	}
 	PRINTLN("Booting OS...");
+	//TODO: Set up GDT
+	//TODO: Set up IDT
 	//asm { sti; }
 	//InitiateKeyboard;
 	/*while(1) {
 		char c = getc;
 		PRINT(c);
 	}*/
-	for(;;){}
+	asm { hlt; }
 }
 
 /******************************************************************************
@@ -54,7 +63,7 @@ extern(C) void* malloc(size_t bytes) {
 /******************************************************************************
  * STRING LIBRARY
  ******************************************************************************/
-//module Kernel.c.string; or what
+//module Kernel.stdc.string; or what
 
 /**
  * Set a memory region with a byte value.
@@ -65,16 +74,13 @@ extern(C) void* malloc(size_t bytes) {
  * Returns: ptr
  */
 extern(C) void* memset(void* ptr, int val, size_t num) {
-//CHECK: Does ptr's value change on return?
-//TODO: Test memset
 	const ubyte v = val & 0xFF;
 	ubyte* p = cast(ubyte*)ptr;
-	for (const void* limit = p + num; p < limit; ++p) *p = v;
+	while (num--) *p++ = v;
 	return ptr;
 }
 
 extern(C) void* memmove(void* des, const void* src, size_t num) {
-//CHECK: Does des' value change on return?
 //TODO: memmove
 	ubyte* d = cast(ubyte*)des;
 	const ubyte* s = cast(const ubyte*)des;
@@ -152,21 +158,20 @@ enum : ubyte {
 /// Params: s = String
 void PRINT(const char[] s) {
 	const size_t l = s.length;
-	for (size_t i = 0; i < l; ++i, ++CURSOR_X) {
-		if (CURSOR_X >= MAX_COLS)
-			CURSOR_NL;
-//TODO: Improve addressing
-		*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2) = s[i];
-		*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2 + 1) = CURRENT_COLOR;
+	ubyte* vidp = VIDEO_POSITION;
+	for (size_t i; i < l; ++i, ++CURSOR_X) {
+		//if (CURSOR_X >= MAX_COLS) CURSOR_NL;
+		*vidp = s[i];
+		*++vidp = CURRENT_COLOR;
+		++vidp;
 	}
 }
 
 void PRINT(char c) {
 	++CURSOR_X;
-	*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2) = c;
-	*(VIDEO_ADR + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2 + 1) = CURRENT_COLOR;
-	if (CURSOR_X >= MAX_COLS)
-		CURSOR_NL;
+	*VIDEO_POSITION = c;
+	*(VIDEO_POSITION + 1) = CURRENT_COLOR;
+	//if (CURSOR_X >= MAX_COLS) CURSOR_NL;
 }
 
 void PRINTLN(const char[] s = null) {
@@ -179,10 +184,19 @@ void PRINTLN(char c) {
 	CURSOR_NL;
 }
 
-/// Clears the screen buffer.
+/// Clear screen buffer from all characters and attributes.
 extern(C) void CLEAR() {
-	const size_t l = MAX_COLS * MAX_ROWS;
-	for (int i = 0; i < l; i += 2) *(VIDEO_ADR + i) = 0;
+	memset(VIDEO_ADDRESS, 0, (MAX_COLS * MAX_ROWS) * 2);
+}
+/// Clear screen buffer from all characters.
+extern(C) void CLEAR_CHARS() {
+	size_t l = (MAX_COLS * MAX_ROWS) * 2;
+	while (l -= 2 >= 0) *(VIDEO_ADDRESS + l) = 0;
+}
+/// Clear screen buffer from all attributes.
+extern(C) void CLEAR_ATTRIBUTES() {
+	size_t l = ((MAX_COLS * MAX_ROWS) * 2) + 1;
+	while (l -= 2 >= 0) *(VIDEO_ADDRESS + l) = 0;
 }
 
 /*extern(C) void SETCOLOR(ubyte b) {
@@ -195,7 +209,10 @@ __gshared const uint MAX_COLS = 80;
 __gshared const uint MAX_ROWS = 25;
 
 /// Video memory location, works both in i386 and x86-64 (From GRUB, in QEMU)
-__gshared ubyte* VIDEO_ADR = cast(ubyte*)0xFFFF_8000_000B_8000;
+__gshared ubyte* VIDEO_ADDRESS = cast(ubyte*)0xFFFF_8000_000B_8000;
+@property ubyte* VIDEO_POSITION() {
+	return VIDEO_ADDRESS + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2;
+}
 /// Current X cursor position.
 __gshared ushort CURSOR_X = 0;
 /// Current Y cursor position.

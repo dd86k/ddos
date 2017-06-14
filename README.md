@@ -8,9 +8,11 @@ I also want to revive the MS-DOS feel in an 32-bit (and possibly 64-bit) environ
 |---|---|
 | Use it? | No |
 | Install it? | No |
+| Use its bootloader? | No |
 | Run programs? | No |
 | Compile stuff? | No |
 | Play games? | No |
+| Have fun with it? | No |
 
 # TODO
 

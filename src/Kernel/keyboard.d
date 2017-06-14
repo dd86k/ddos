@@ -16,7 +16,7 @@ private enum : ubyte {
 }
 
 extern(C) void InitiateKeyboard() {
-    /*asm { naked; // GRUB already enabled it
+    /*asm { naked; // GRUB already enabled it maybe?
     mov AL, 0xF4;
     out 0x64, AL;
     mov AL, 0xFF;

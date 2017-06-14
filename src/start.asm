@@ -1,4 +1,4 @@
-; This is the starting point of the MULTIBOOT loader.
+; This is the starting point of the GRUB MULTIBOOT loader.
 ; AUTHOR: dd86k
 
 BITS 32
@@ -9,30 +9,26 @@ extern main		; For Kernel.main.main
 ; Most D compilers need these externs.
 extern start_ctors, end_ctors, start_dtors, end_dtors
 
-MAGIC			equ		0x1BADB002
+GRUBMAGIC		equ		0x1BADB002
 FLAGS			equ		MODULEALIGN | MEMINFO
-CHECKSUM		equ		-(MAGIC + FLAGS)
+CHECKSUM		equ		-(GRUBMAGIC + FLAGS)
 ;TODO: Include all flags for future use.
 MODULEALIGN		equ		1
 MEMINFO			equ		2
 
-;STACKSIZE	equ	0x4000	; Nice little stack of 16 KB
+;STACKSIZE	equ	0x4000	; 16 KB
 
 ; We could add a section, a label, and an alignment, but we do not currently
-; need those. They absolutely do need to be at the very start of the binary for
-; GRUB.
-dd MAGIC
+; need those. They absolutely do need to be at least at the very start of the
+; binary file for GRUB. The rest above is simply assembler/compiler stuff.
+dd GRUBMAGIC
 dd FLAGS
 dd CHECKSUM
 
 section .text
-
 start:
-	cli			; Clear Interrupts
-    ;TOOD: Do __cdecl (Doesn't GRUB already do that?)
-	;push eax	; See MAGIC
-	;push ebx	; See Multiboot information structure
-	call main	; Call main from Kernel.boot.main
+	cli			; Clear Interrupt flag
+	call main	; Call main in module Kernel.main
 
 cpuhalt:
 	hlt
