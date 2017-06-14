@@ -8,11 +8,13 @@
 
 module Kernel.main;
 
-private import Kernel.keyboard;
+import Kernel.keyboard;
+import Kernel.GDT;
+import Kernel.IDT;
 
 private:
 extern(C) void* _Dmodule_ref;
-extern(C) uint GRUBMAGIC; /// GRUB magic from start.asm
+extern(C) const uint GRUBMAGIC; /// GRUB magic from start.asm
 
 /**
  * Main starting point of the kernel from any possible bootloader.
@@ -24,15 +26,17 @@ extern(C) uint GRUBMAGIC; /// GRUB magic from start.asm
  *   mistruc = Multiboot structure location (EBX)
  */
 extern(C) void main(uint magic, uint mbstruct) {
-	PRINT("BOOTLOADER: ");
+	PRINT("Bootloader: ");
 	switch (magic) {
 		case GRUBMAGIC: PRINTLN("GRUB"); break;
 		default: PRINTLN("UNKNOWN");
 	}
-	PRINTLN("Booting OS...");
-	//TODO: Set up GDT
-	//TODO: Set up IDT
-	//asm { sti; }
+	PRINT("Setting up GDT... ");
+	InitGDT;
+	PRINTLN("OK");
+	PRINT("Setting up IDT... ");
+	InitIDT;
+	PRINTLN("OK");
 	//InitiateKeyboard;
 	/*while(1) {
 		char c = getc;
