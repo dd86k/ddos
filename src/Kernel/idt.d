@@ -5,13 +5,14 @@
 module Kernel.IDT;
 
 __gshared idt_t IDTp;
-__gshared idt[256] IDT;
+__gshared idt_entry[256] IDT;
 
-struct idt_t {
+struct idt_t { align(1):
     ushort limit;
-    idt* base;
+    idt_entry* base;
 }
-struct idt { align(1):
+/// ISR
+struct idt_entry { align(1):
     ushort lo_base;
     ushort selector;
     ubyte reserved;
@@ -20,7 +21,8 @@ struct idt { align(1):
 }
 
 void InitIDT() {
-    IDTp.limit = idt.sizeof * 256 - 1;
+    import Kernel.main : memset;
+    IDTp.limit = idt_entry.sizeof * 256 - 1;
     IDTp.base = &IDT[0];
 
     void* def = &X86_EDEFAULT;
@@ -44,7 +46,8 @@ void InitIDT() {
     SetIDTEntry(16, def);
     SetIDTEntry(17, def);
     SetIDTEntry(18, def);
-    //Intel defines up to 20 which is #VM
+    // Intel defines up to 20 which is #VM
+    // Otherwise, the rest up to 31 is reserved
 
     SetIDTEntry(32, &IRQ0_HANDLER);
     SetIDTEntry(33, &IRQ1_HANDLER);
@@ -64,26 +67,27 @@ private:
 /**
  * Set an entry in the Interrupt Descriptor Table.
  * Params:
- *   index = IDT index
+ *   index = interrupt index
  *   base = Subroutine pointer
  *   s = selector (defaults to 8)
  *   flags = flags (defaults to 0x8E)
  */
 void SetIDTEntry(ubyte index, void* base, ushort s = 0x8, ubyte flags = 0x8E) {
-    idt entry;
+    idt_entry* entry = &IDT[index];
 
     uint b = cast(uint)base;
     entry.lo_base = b & 0xFFFF;
-    entry.hi_base = b >> 16;
+    entry.hi_base = b >>> 16;
     entry.selector = s;
     entry.flags = flags;
-
-    IDT[index] = entry;
 }
 
 void X86_EDEFAULT() {
     import Kernel.main; // Has everything for now
     PRINTLN("UNHANDLED INTERRUPT");
+    asm { naked;
+        iret;
+    }
 }
 
 /*********************************************************
@@ -92,7 +96,9 @@ void X86_EDEFAULT() {
 
 /// #DE Division error
 void X86_EZERODIV() {
-
+asm { naked;
+    iret;
+}
 }
 /// #DB
 void X86_EDEBUG() {

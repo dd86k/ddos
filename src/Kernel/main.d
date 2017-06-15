@@ -29,7 +29,7 @@ extern(C) void main(uint magic, uint mbstruct) {
 	PRINT("Bootloader: ");
 	switch (magic) {
 		case GRUBMAGIC: PRINTLN("GRUB"); break;
-		default: PRINTLN("UNKNOWN");
+		default: PRINTLN("Unknown");
 	}
 	PRINT("Setting up GDT... ");
 	InitGDT;
@@ -42,6 +42,7 @@ extern(C) void main(uint magic, uint mbstruct) {
 		char c = getc;
 		PRINT(c);
 	}*/
+	PRINTLN("HLT");
 	asm { hlt; }
 }
 
