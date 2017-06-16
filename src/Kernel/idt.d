@@ -7,6 +7,7 @@ module Kernel.IDT;
 __gshared idt_t IDTp;
 __gshared idt_entry[256] IDT;
 
+/// IDTR
 struct idt_t { align(1):
     ushort limit;
     idt_entry* base;
@@ -21,10 +22,9 @@ struct idt_entry { align(1):
 }
 
 void InitIDT() {
-    import Kernel.main : memset;
     IDTp.limit = idt_entry.sizeof * 256 - 1;
     IDTp.base = &IDT[0];
-
+    
     void* def = &X86_EDEFAULT;
 
     SetIDTEntry(0, &X86_EZERODIV);
@@ -53,9 +53,10 @@ void InitIDT() {
     SetIDTEntry(33, &IRQ1_HANDLER);
     SetIDTEntry(40, &IRQ7_HANDLER);
 
+
     ubyte i = 34;
     for(      ; i <  40; ++i) SetIDTEntry(i, def);
-    for(i = 41; i < 256; ++i) SetIDTEntry(i, def);
+    for(i = 41; i < 255; ++i) SetIDTEntry(i, def);
 
     asm {
         lidt [IDTp];
@@ -74,7 +75,6 @@ private:
  */
 void SetIDTEntry(ubyte index, void* base, ushort s = 0x8, ubyte flags = 0x8E) {
     idt_entry* entry = &IDT[index];
-
     uint b = cast(uint)base;
     entry.lo_base = b & 0xFFFF;
     entry.hi_base = b >>> 16;
@@ -85,7 +85,8 @@ void SetIDTEntry(ubyte index, void* base, ushort s = 0x8, ubyte flags = 0x8E) {
 void X86_EDEFAULT() {
     import Kernel.main; // Has everything for now
     PRINTLN("UNHANDLED INTERRUPT");
-    asm { naked;
+    asm {
+
         iret;
     }
 }
@@ -96,9 +97,9 @@ void X86_EDEFAULT() {
 
 /// #DE Division error
 void X86_EZERODIV() {
-asm { naked;
-    iret;
-}
+    asm { naked;
+        iret;
+    }
 }
 /// #DB
 void X86_EDEBUG() {

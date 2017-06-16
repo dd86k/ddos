@@ -3,7 +3,7 @@
 
 BITS 32
 
-global start, _d_dso_registry
+global start, _d_dso_registry, _d_switch_error
 
 extern main		; For Kernel.main.main
 ; Most D compilers need these externs.
@@ -28,6 +28,8 @@ dd CHECKSUM
 section .text
 start:
 	cli			; Clear Interrupt flag
+	push ebx	; GRUB multiboot structure
+	push eax	; GRUB multiboot magic
 	call main	; Call main in module Kernel.main
 
 cpuhalt:
@@ -54,6 +56,7 @@ static_ctors_loop:
 	cmp ebx, end_ctors
 	jb .body
 _d_dso_registry:
+_d_switch_error:
  
 section .bss
 align 4

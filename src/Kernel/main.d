@@ -14,7 +14,8 @@ import Kernel.IDT;
 
 private:
 extern(C) void* _Dmodule_ref;
-extern(C) const uint GRUBMAGIC; /// GRUB magic from start.asm
+
+const uint GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
 /**
  * Main starting point of the kernel from any possible bootloader.
@@ -28,21 +29,24 @@ extern(C) const uint GRUBMAGIC; /// GRUB magic from start.asm
 extern(C) void main(uint magic, uint mbstruct) {
 	PRINT("Bootloader: ");
 	switch (magic) {
-		case GRUBMAGIC: PRINTLN("GRUB"); break;
-		default: PRINTLN("Unknown");
+		case GRUBMAGIC: PRINT("GRUB"); break;
+		default: PRINT("Unknown");
 	}
+	PRINT(" ("); PRINTUDWH(magic); PRINT(")"); PRINTLN;
+	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN;
 	PRINT("Setting up GDT... ");
 	InitGDT;
 	PRINTLN("OK");
 	PRINT("Setting up IDT... ");
 	InitIDT;
 	PRINTLN("OK");
+	//asm { int 42; }
 	//InitiateKeyboard;
 	/*while(1) {
 		char c = getc;
 		PRINT(c);
 	}*/
-	PRINTLN("HLT");
+	PRINTLN("Goodnight!");
 	asm { hlt; }
 }
 
@@ -173,9 +177,10 @@ void PRINT(const char[] s) {
 }
 
 void PRINT(char c) {
+	ubyte* p = VIDEO_POSITION;
+	*p = c;
+	*(p + 1) = CURRENT_COLOR;
 	++CURSOR_X;
-	*VIDEO_POSITION = c;
-	*(VIDEO_POSITION + 1) = CURRENT_COLOR;
 	//if (CURSOR_X >= MAX_COLS) CURSOR_NL;
 }
 
@@ -187,6 +192,66 @@ void PRINTLN(const char[] s = null) {
 void PRINTLN(char c) {
 	PRINT(c);
 	CURSOR_NL;
+}
+
+/// Print and unsigned double word
+void PRINTUDW(uint l) {
+	
+}
+
+/// Print and unsigned double word in hexadecimal with padding
+void PRINTUDWH(uint l) {
+	ubyte* p = cast(ubyte*)&l;
+	PRINT(fhupper(p[3] & 0xF0));
+	PRINT(fhlower(p[3] & 0xF));
+	PRINT(fhupper(p[2] & 0xF0));
+	PRINT(fhlower(p[2] & 0xF));
+	PRINT(fhupper(p[1] & 0xF0));
+	PRINT(fhlower(p[1] & 0xF));
+	PRINT(fhupper(p[0] & 0xF0));
+	PRINT(fhlower(p[0] & 0xF));
+}
+
+private char fhupper(ubyte b) {
+	final switch (b) {
+		case 0: return '0';
+		case 0x10: return '1';
+		case 0x20: return '2';
+		case 0x30: return '3';
+		case 0x40: return '4';
+		case 0x50: return '5';
+		case 0x60: return '6';
+		case 0x70: return '7';
+		case 0x80: return '8';
+		case 0x90: return '9';
+		case 0xA0: return 'A';
+		case 0xB0: return 'B';
+		case 0xC0: return 'C';
+		case 0xD0: return 'D';
+		case 0xE0: return 'E';
+		case 0xF0: return 'F';
+	}
+}
+
+private char fhlower(ubyte b) {
+	final switch (b) {
+		case 0: return '0';
+		case 1: return '1';
+		case 2: return '2';
+		case 3: return '3';
+		case 4: return '4';
+		case 5: return '5';
+		case 6: return '6';
+		case 7: return '7';
+		case 8: return '8';
+		case 9: return '9';
+		case 0xA: return 'A';
+		case 0xB: return 'B';
+		case 0xC: return 'C';
+		case 0xD: return 'D';
+		case 0xE: return 'E';
+		case 0xF: return 'D';
+	}
 }
 
 /// Clear screen buffer from all characters and attributes.

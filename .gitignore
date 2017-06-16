@@ -1,3 +1,4 @@
 bin/
 isoroot/boot/kernel.bin
 ddos.iso
+serial_com1.txt

@@ -1,4 +1,4 @@
-.PHONY: default iso test clean all asm link with_gdc all_gdc
+.PHONY: default iso test clean all asm link_grub
 
 #################
 # COMPILATION
@@ -9,8 +9,8 @@
 
 default:
 	@make asm
-	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -of=bin/kernel.o src/Kernel/*.d
-	@make link
+	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -fthread-model=local-dynamic -of=bin/kernel.o src/Kernel/*.d
+	@make link_grub
 
 all:
 	@make
@@ -20,7 +20,7 @@ all:
 asm:
 	nasm -f elf32 -o bin/start.o src/start.asm
 
-link:
+link_grub:
 	ld -T src/linker.ld -m elf_i386 -o bin/kernel.bin bin/start.o bin/kernel.o
 
 #################
