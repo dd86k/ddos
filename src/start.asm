@@ -58,8 +58,7 @@ static_ctors_loop:
 _d_dso_registry:
 _d_switch_error:
  
-section .bss
-align 4
- 
+;section .bss
+;align 4
 ;stack:
 ;	resb	STACKSIZE

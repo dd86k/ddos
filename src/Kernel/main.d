@@ -40,13 +40,17 @@ extern(C) void main(uint magic, uint mbstruct) {
 	PRINT("Setting up IDT... ");
 	InitIDT;
 	PRINTLN("OK");
-	//asm { int 42; }
-	//InitiateKeyboard;
-	/*while(1) {
+	asm {
+		xchg BX,BX;
+		sti;
+	}
+	InitiateKeyboard;
+	asm { xchg BX,BX; }
+	while(1) {
 		char c = getc;
 		PRINT(c);
-	}*/
-	PRINTLN("Goodnight!");
+	}
+	PRINTLN("Goodnight...");
 	asm { hlt; }
 }
 

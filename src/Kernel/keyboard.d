@@ -26,15 +26,11 @@ extern(C) void InitiateKeyboard() {
 
 extern(C) ubyte getc() {
     asm { naked;
-/*WAIT_UP:
+WAIT_UP:
     in AL, 0x64;
     and AL, 0b10;
     jz WAIT_UP;
     in AL, 0x60;
-    ret;*/
-    mov AH, 0x10;
-    int 0x16;
-    and AX, 0xFF;
     ret;
     }
 }

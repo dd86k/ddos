@@ -8,12 +8,12 @@ __gshared idt_t IDTp;
 __gshared idt_entry[256] IDT;
 
 /// IDTR
-struct idt_t { align(1):
+align(1) struct idt_t {
     ushort limit;
     idt_entry* base;
 }
 /// ISR
-struct idt_entry { align(1):
+align(1) struct idt_entry {
     ushort lo_base;
     ushort selector;
     ubyte reserved;
@@ -52,7 +52,6 @@ void InitIDT() {
     SetIDTEntry(32, &IRQ0_HANDLER);
     SetIDTEntry(33, &IRQ1_HANDLER);
     SetIDTEntry(40, &IRQ7_HANDLER);
-
 
     ubyte i = 34;
     for(      ; i <  40; ++i) SetIDTEntry(i, def);
@@ -103,27 +102,39 @@ void X86_EZERODIV() {
 }
 /// #DB
 void X86_EDEBUG() {
-
+    asm {
+        iret;
+    }
 }
 /// NMI
 void X86_ENMI() {
-
+    asm {
+        iret;
+    }
 }
 /// #BP INT 3
 void X86_EBREAKPOINT() {
-
+    asm {
+        iret;
+    }
 }
 /// #OF Overflow (INTO)
 void X86_EOVERFLOW() {
-
+    asm {
+        iret;
+    }
 }
 /// #BR Out of bounds (array)
 void X86_EOUTBOUNDS() {
-
+    asm {
+        iret;
+    }
 }
 /// #UD Invalid operation code
 void X86_EINVCODE() {
-
+    asm {
+        iret;
+    }
 }
 
 /*********************************************************
@@ -131,11 +142,17 @@ void X86_EINVCODE() {
  *********************************************************/
 
 void IRQ0_HANDLER() {
-
+    asm {
+        iret;
+    }
 }
 void IRQ1_HANDLER() {
-
+    asm {
+        iret;
+    }
 }
 void IRQ7_HANDLER() {
-
+    asm {
+        iret;
+    }
 }
