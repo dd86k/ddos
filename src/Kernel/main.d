@@ -17,6 +17,23 @@ extern(C) void* _Dmodule_ref;
 
 const uint GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
+const string[] LOGO = [
+	"+------------------------------+",
+	"|                              |",
+	"|  DDDD   DDDD    OOO    SSSS  |",
+	"|  D   D  D   D  O   O  S      |",
+	"|  D   D  D   D  O   O   SSS   |",
+	"|  D   D  D   D  O   O      S  |",
+	"|  DDDD   DDDD    OOO   SSSS   |",
+	"|                              |",
+	"+------------------------------+"
+];
+
+private void PRINT_LOGO() {
+	foreach(s; LOGO)
+		PRINTLN(s);
+}
+
 /**
  * Main starting point of the kernel from any possible bootloader.
  * The bootloader MUST provide with two piece of information:
@@ -24,7 +41,7 @@ const uint GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
  * - MULTIBOOT STRUCTURE (void*, EBX)
  * Params:
  *   magic = Multiboot magic (EAX)
- *   mistruc = Multiboot structure location (EBX)
+ *   mbstruct = Multiboot structure location (EBX)
  */
 extern(C) void main(uint magic, uint mbstruct) {
 	PRINT("Bootloader: ");
@@ -40,16 +57,22 @@ extern(C) void main(uint magic, uint mbstruct) {
 	PRINT("Setting up IDT... ");
 	InitIDT;
 	PRINTLN("OK");
+	/*PRINT("Activating interrupts... ");
 	asm {
 		xchg BX,BX;
 		sti;
 	}
+	PRINTLN("OK");
+	PRINT("Initiating keyboard...");
 	InitiateKeyboard;
 	asm { xchg BX,BX; }
+	PRINTLN("OK");
 	while(1) {
 		char c = getc;
 		PRINT(c);
-	}
+	}*/
+	PRINTLN("Welcome to...");
+	PRINT_LOGO;
 	PRINTLN("Goodnight...");
 	asm { hlt; }
 }
