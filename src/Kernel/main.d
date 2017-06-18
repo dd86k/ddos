@@ -15,9 +15,9 @@ import Kernel.IDT;
 private:
 extern(C) void* _Dmodule_ref;
 
-const uint GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
+enum GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
-const string[] LOGO = [
+private const string[] LOGO = [
 	"+------------------------------+",
 	"|                              |",
 	"|  DDDD   DDDD    OOO    SSSS  |",
@@ -29,9 +29,24 @@ const string[] LOGO = [
 	"+------------------------------+"
 ];
 
+private const string[] LOGO_IMPROVED = [
+"\xDA\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"~
+"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF",
+"\xB3                                    \xB3",
+"\xB3  \xB0\xDB\xDB\xDB\xDB\xDB\xDC  \xB0\xDB\xDB\xDB\xDB\xDB\xDC  "~
+"\xDC\xDB\xDB\xDB\xDB\xDC  \xDC\xDB\xDB\xDB\xDB\xDF  \xB3",
+"\xB3  \xB0\xDB    \xDB  \xB0\xDB    \xDB  \xDB    \xDB  \xDB       \xB3",
+"\xB3  \xB0\xDB    \xDB  \xB0\xDB    \xDB  \xDB    \xDB  \xDF\xDB\xDB\xDB\xDB\xDC  \xB3",
+"\xB3  \xB0\xDB    \xDB  \xB0\xDB    \xDB  \xDB    \xDB       \xDB  \xB3",
+"\xB3  \xB0\xDB\xDB\xDB\xDB\xDB\xDF  \xB0\xDB\xDB\xDB\xDB\xDB\xDF  "~
+"\xDF\xDB\xDB\xDB\xDB\xDF  \xDC\xDB\xDB\xDB\xDB\xDF  \xB3",
+"\xB3                                    \xB3",
+"\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"~
+"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9"
+];
+
 private void PRINT_LOGO() {
-	foreach(s; LOGO)
-		PRINTLN(s);
+	foreach(s; LOGO_IMPROVED) PRINTLN(s);
 }
 
 /**
@@ -50,20 +65,19 @@ extern(C) void main(uint magic, uint mbstruct) {
 		default: PRINT("Unknown");
 	}
 	PRINT(" ("); PRINTUDWH(magic); PRINT(")"); PRINTLN;
-	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN;
+	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN('h');
 	PRINT("Setting up GDT... ");
 	InitGDT;
 	PRINTLN("OK");
 	PRINT("Setting up IDT... ");
 	InitIDT;
 	PRINTLN("OK");
-	/*PRINT("Activating interrupts... ");
+	PRINT("Activating interrupts... ");
 	asm {
-		xchg BX,BX;
 		sti;
 	}
 	PRINTLN("OK");
-	PRINT("Initiating keyboard...");
+	/*PRINT("Initiating keyboard...");
 	InitiateKeyboard;
 	asm { xchg BX,BX; }
 	PRINTLN("OK");
@@ -73,6 +87,9 @@ extern(C) void main(uint magic, uint mbstruct) {
 	}*/
 	PRINTLN("Welcome to...");
 	PRINT_LOGO;
+	for (int i; i < 40; ++i) {
+		PRINTUDWH(i); CURSOR_NL;
+	}
 	PRINTLN("Goodnight...");
 	asm { hlt; }
 }
@@ -107,22 +124,60 @@ extern(C) void* malloc(size_t bytes) {
  *   ptr = Memory region to affect
  *   val = Byte value to assign
  *   num = Size of the operation
- * Returns: ptr
+ * Returns: Pointer (unchanged)
  */
 extern(C) void* memset(void* ptr, int val, size_t num) {
-	const ubyte v = val & 0xFF;
-	ubyte* p = cast(ubyte*)ptr;
-	while (num--) *p++ = v;
+	if (num > 0) {
+		const ubyte v = val & 0xFF;
+		ubyte* p = cast(ubyte*)ptr;
+		while (num--) *p++ = v;
+	}
 	return ptr;
 }
 
+/**
+ * Move a section of memory.
+ * Params:
+ *   des = Destination pointer
+ *   src = Source pointer
+ *   num = Number of bytes to move
+ * Returns: Destination pointer (unchanged)
+ */
 extern(C) void* memmove(void* des, const void* src, size_t num) {
-//TODO: memmove
 	ubyte* d = cast(ubyte*)des;
-	const ubyte* s = cast(const ubyte*)des;
+	if (des > src) {
+		ubyte* s = cast(ubyte*)src + num;
+		while (num--) {
+			*d-- = *s;
+			*s-- = 0;
+		}
+	} else if (des < src) {
+		ubyte* s = cast(ubyte*)src;
+		while (num--) {
+			*d++ = *s;
+			*s++ = 0;
+		}
+	} // else des == src and don't do anything
+	return des;
+}
 
-
-
+/**
+ * Copy a section of memory.
+ * Params:
+ *   des = Destination pointer
+ *   src = Source pointer
+ *   num = Number of bytes to move
+ * Returns: Destination pointer (unchanged)
+ */
+extern(C) void* memcpy(void* des, const void* src, size_t num) {
+	ubyte* d = cast(ubyte*)des;
+	if (des > src) {
+		ubyte* s = cast(ubyte*)src + num;
+		while (num--) *d-- = *s--;
+	} else if (des < src) {
+		ubyte* s = cast(ubyte*)src;
+		while (num--) *d++ = *s++;
+	} // else des == src and don't do anything
 	return des;
 }
 
@@ -132,6 +187,8 @@ private:
 /******************************************************************************
  * HELPER LIBRARY
  ******************************************************************************/
+
+//module Kernel.utils.generic;
 
 public:
 //http://stackoverflow.com/a/23840699
@@ -149,7 +206,7 @@ private:
  * CONSOLE LIBRARY
  ******************************************************************************/
 
-//TODO: Move all console related things to Console.d
+//module Kernel.console;
 
 public:
 // VGA text mode 0 colors
@@ -196,7 +253,7 @@ void PRINT(const char[] s) {
 	const size_t l = s.length;
 	ubyte* vidp = VIDEO_POSITION;
 	for (size_t i; i < l; ++i, ++CURSOR_X) {
-		//if (CURSOR_X >= MAX_COLS) CURSOR_NL;
+		if (CURSOR_X >= MAX_COLS) CURSOR_NL;
 		*vidp = s[i];
 		*++vidp = CURRENT_COLOR;
 		++vidp;
@@ -307,6 +364,7 @@ __gshared const uint MAX_ROWS = 25;
 
 /// Video memory location, works both in i386 and x86-64 (From GRUB, in QEMU)
 __gshared ubyte* VIDEO_ADDRESS = cast(ubyte*)0xFFFF_8000_000B_8000;
+/// Calculated video memory location with cursor positions.
 @property ubyte* VIDEO_POSITION() {
 	return VIDEO_ADDRESS + (CURSOR_X + CURSOR_Y * MAX_COLS) * 2;
 }
@@ -319,21 +377,17 @@ __gshared ubyte CURRENT_COLOR = COLOR_FG_LIGHT_GRAY | COLOR_BG_BLACK;
 //http://www.osdever.net/bkerndev/Docs/printing.htm
 //http://www.brackeen.com/home/vga 
 
-//TODO: Screen buffer for HISTORY (as in you can scroll around)
+//TODO: Screen buffer for command history (way later)
 
-extern(C) void SCROLL_DOWN(int lines = 1) {
-//TODO: Scroll
-	
-}
-
-extern(C) void CURSOR_NL() {
+extern(C) void CURSOR_NL(int lines = 1) {
 	CURSOR_X = 0;
-	if (CURSOR_Y < MAX_ROWS) {
-		++CURSOR_Y;
-		//TODO: Add Scroll here
+	if (++CURSOR_Y > MAX_ROWS) {
+		//TODO: SCROLLING
+		//ubyte* v = VIDEO_ADDRESS + (MAX_ROWS*MAX_ROWS) * 2;
+
 	}
 }
 extern(C) void CURSOR_RL() {
 	CURSOR_X = 0;
-//TODO: Check if '\r' checks output under Linux
+//TODO: Check if '\r' clears output under most Linux terminals
 }

@@ -3,8 +3,6 @@
 #################
 # COMPILATION
 #################
-# with_gdc:
-#gdc -m32 -O3 -nodefaultlibs -mno-red-zone -fno-bounds-check -frelease -c src/*.d -o bin/kernel.o -g
 #_d_dso_registry: rt.sections_elf_shared.CompilerDSOData
 
 default:
@@ -15,7 +13,6 @@ default:
 all:
 	@make
 	@make iso
-	@make test
 
 asm:
 	nasm -f elf32 -o bin/start.o src/start.asm

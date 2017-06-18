@@ -3,7 +3,9 @@
 
 BITS 32
 
-global start, _d_dso_registry, _d_switch_error
+global start
+; Lazy D corner
+global _d_dso_registry, _d_switch_error
 
 extern main		; For Kernel.main.main
 ; Most D compilers need these externs.
@@ -13,8 +15,9 @@ GRUBMAGIC		equ		0x1BADB002
 FLAGS			equ		MODULEALIGN | MEMINFO
 CHECKSUM		equ		-(GRUBMAGIC + FLAGS)
 ;TODO: Include all flags for future use.
-MODULEALIGN		equ		1
-MEMINFO			equ		2
+MODULEALIGN		equ		1	; 4 KB align
+MEMINFO			equ		2	; Memory information in the mem_* fields
+VIDMODES		equ		4	; Video modes information must be available to the kernel
 
 ;STACKSIZE	equ	0x4000	; 16 KB
 

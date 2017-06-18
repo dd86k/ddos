@@ -4,12 +4,19 @@
 
 module Kernel.GDT;
 
+__gshared gdt_ptr GDTp;
 __gshared ulong[5] GDT;
+align(1) struct gdt_ptr {
+    ushort limit;
+    uint base;
+}
 
 /**
  * Constructs GDT
  */
-void InitGDT() {
+void InitGDT() { 
+    GDTp.limit = 8 * 5;
+    GDTp.base = cast(uint)&GDT[0];
     // Flat memory model
     EncodeGDTEntry(0, 0, 0, 0); // Null seg
     EncodeGDTEntry(1, 0, 0xFFFFFFFF, 0x9A); // Code seg
@@ -17,12 +24,7 @@ void InitGDT() {
     EncodeGDTEntry(3, 0, 0xFFFFFFFF, 0xFA); // User-mode code seg
     EncodeGDTEntry(4, 0, 0xFFFFFFFF, 0xF2); // User-mode data seg
     asm {
-        lea ECX, GDT;
-        mov EAX, [ESP+4];
-        mov [ECX+2], EAX;
-        mov AX, [ESP+8];
-        mov [ECX], AX;
-        lgdt [ECX];
+        lgdt [GDTp];
     }
 }
 
