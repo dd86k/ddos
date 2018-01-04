@@ -15,7 +15,7 @@ align(1) struct idt_t {
     ushort limit;
     idt_entry* base;
 }
-/// ISR
+/// ISR, IA-32
 align(1) struct idt_entry {
     ushort lo_base;
     ushort selector;

@@ -65,7 +65,7 @@ extern(C) void main(uint magic, uint mbstruct) {
 		default: PRINT("Unknown");
 	}
 	PRINT(" ("); PRINTUDWH(magic); PRINT(")"); PRINTLN;
-	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN('h');
+	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN;
 	PRINT("Setting up GDT... ");
 	InitGDT;
 	PRINTLN("OK");
