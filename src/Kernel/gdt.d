@@ -2,7 +2,7 @@
  * Global Descriptor Table
  */
 
-module Kernel.GDT;
+module kernel_gdt;
 
 __gshared gdt_ptr GDTp;
 __gshared ulong[5] GDT;
@@ -16,19 +16,19 @@ align(1) struct gdt_ptr {
  */
 void InitGDT() { 
     GDTp.limit = 8 * 5;
-    GDTp.base = cast(uint)&GDT[0];
+    GDTp.base = cast(uint)&GDT;
     // Flat memory model
-    EncodeGDTEntry(0, 0, 0, 0); // Null seg
-    EncodeGDTEntry(1, 0, 0xFFFFFFFF, 0x9A); // Code seg
-    EncodeGDTEntry(2, 0, 0xFFFFFFFF, 0x92); // Data seg
-    EncodeGDTEntry(3, 0, 0xFFFFFFFF, 0xFA); // User-mode code seg
-    EncodeGDTEntry(4, 0, 0xFFFFFFFF, 0xF2); // User-mode data seg
+    k_gdt(0, 0, 0, 0); // Null seg
+    k_gdt(1, 0, 0xFFFFFFFF, 0x9A); // Code seg
+    k_gdt(2, 0, 0xFFFFFFFF, 0x92); // Data seg
+    k_gdt(3, 0, 0xFFFFFFFF, 0xFA); // User-mode code seg
+    k_gdt(4, 0, 0xFFFFFFFF, 0xF2); // User-mode data seg
     asm {
         lgdt [GDTp];
     }
 }
 
-private void EncodeGDTEntry(int gate, uint base, uint limit, ushort flag) {
+private void k_gdt(int gate, uint base, uint limit, ushort flag) {
     uint* desc = cast(uint*)&GDT[gate];
 
     /*

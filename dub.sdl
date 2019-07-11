@@ -1,0 +1,78 @@
+name "dd-dos"
+version "0.0.0"
+description "Small DOS Virtual Machine"
+authors "dd86k"
+copyright "Copyright © dd86k 2017-2018"
+license "MIT"
+homepage "https://github.com/dd86k/dd-dos"
+
+###################
+# Debug builds
+###################
+
+buildType "debug-verbose" {
+  targetType "executable"
+  buildOptions "debugMode" "debugInfoC"
+  dflags "-betterC" "-transition=intpromote" "-vgc" "-vtls" "-v"
+}
+
+buildType "debug" {
+  targetType "executable"
+  buildOptions "debugMode" "debugInfoC"
+  dflags "-enable-color" "-defaultlib=" "-Oz" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
+  lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/boot.o" "bin/kernel.o"
+}
+
+buildType "debug-grub" {
+  targetType "executable"
+  buildOptions "debugMode" "debugInfoC"
+  dflags "-enable-color" "-defaultlib=" "-Oz" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
+  lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/start.o" "bin/kernel.o"
+}
+
+###################
+# Release builds
+###################
+
+buildType "release" {
+  targetType "executable"
+  buildOptions "releaseMode" "optimize"
+  dflags "-betterC" "-transition=intpromote"
+}
+
+###################
+# Tests
+###################
+
+buildType "unittest" {
+  targetName "tests"
+  targetType "executable"
+  buildOptions "unittests"
+  dflags "-transition=intpromote"
+
+  excludedSourceFiles "src/main.d"
+  sourcePaths "tests/"
+  importPaths "tests/"
+}
+
+buildType "unittest-gdc" {
+  targetName "tests"
+  targetType "executable"
+  buildOptions "unittests"
+
+  excludedSourceFiles "src/main.d"
+  sourcePaths "tests/"
+  importPaths "tests/"
+}
+
+buildType "bench" {
+  targetName "bench"
+  targetType "executable"
+  buildOptions "unittests"
+  dflags "-transition=intpromote"
+
+  sourcePaths "bench/"
+  importPaths "bench/"
+  sourceFiles "tests/test_utils.d"
+  excludedSourceFiles "src/main.d"
+}

@@ -7,7 +7,7 @@
 
 default:
 	@make asm
-	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -fthread-model=local-dynamic -of=bin/kernel.o src/Kernel/*.d
+	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -fthread-model=local-dynamic -of=bin/kernel.o src/kernel/gdt.d src/kernel/idt.d src/kernel/kb.d src/kernel/main.d
 	@make link_grub
 
 all:
