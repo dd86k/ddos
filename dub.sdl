@@ -1,33 +1,33 @@
-name "dd-dos"
+name "ddos"
 version "0.0.0"
-description "Small DOS Virtual Machine"
+description "Small OS"
 authors "dd86k"
-copyright "Copyright © dd86k 2017-2018"
+copyright "Copyright © dd86k 2017-2019"
 license "MIT"
-homepage "https://github.com/dd86k/dd-dos"
+homepage "https://github.com/dd86k/ddos"
 
 ###################
 # Debug builds
 ###################
 
 buildType "debug-verbose" {
-  targetType "executable"
-  buildOptions "debugMode" "debugInfoC"
-  dflags "-betterC" "-transition=intpromote" "-vgc" "-vtls" "-v"
+	targetType "executable"
+	buildOptions "debugMode" "debugInfoC"
+	dflags "-betterC" "-transition=intpromote" "-vgc" "-vtls" "-v"
 }
 
 buildType "debug" {
-  targetType "executable"
-  buildOptions "debugMode" "debugInfoC"
-  dflags "-enable-color" "-defaultlib=" "-Oz" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
-  lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/boot.o" "bin/kernel.o"
+	targetType "executable"
+	buildOptions "debugMode" "debugInfoC"
+	dflags "-enable-color" "-defaultlib=" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
+	lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/boot.o" "bin/kernel.o"
 }
 
 buildType "debug-grub" {
-  targetType "executable"
-  buildOptions "debugMode" "debugInfoC"
-  dflags "-enable-color" "-defaultlib=" "-Oz" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
-  lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/start.o" "bin/kernel.o"
+	targetType "executable"
+	buildOptions "debugMode" "debugInfoC"
+	dflags "-enable-color" "-defaultlib=" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
+	lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/start.o" "bin/kernel.o"
 }
 
 ###################
@@ -35,44 +35,7 @@ buildType "debug-grub" {
 ###################
 
 buildType "release" {
-  targetType "executable"
-  buildOptions "releaseMode" "optimize"
-  dflags "-betterC" "-transition=intpromote"
-}
-
-###################
-# Tests
-###################
-
-buildType "unittest" {
-  targetName "tests"
-  targetType "executable"
-  buildOptions "unittests"
-  dflags "-transition=intpromote"
-
-  excludedSourceFiles "src/main.d"
-  sourcePaths "tests/"
-  importPaths "tests/"
-}
-
-buildType "unittest-gdc" {
-  targetName "tests"
-  targetType "executable"
-  buildOptions "unittests"
-
-  excludedSourceFiles "src/main.d"
-  sourcePaths "tests/"
-  importPaths "tests/"
-}
-
-buildType "bench" {
-  targetName "bench"
-  targetType "executable"
-  buildOptions "unittests"
-  dflags "-transition=intpromote"
-
-  sourcePaths "bench/"
-  importPaths "bench/"
-  sourceFiles "tests/test_utils.d"
-  excludedSourceFiles "src/main.d"
+	targetType "executable"
+	buildOptions "releaseMode" "optimize"
+	dflags "-betterC" "-transition=intpromote"
 }
