@@ -11,13 +11,13 @@ extern kmain	; For Kernel.main.main
 ; Most D compilers need these externs.
 extern start_ctors, end_ctors, start_dtors, end_dtors
 
-GRUBMAGIC		equ		0x1BADB002
-FLAGS			equ		MODULEALIGN | MEMINFO
-CHECKSUM		equ		-(GRUBMAGIC + FLAGS)
+GRUBMAGIC	equ	0x1BADB002
+FLAGS		equ	MODULEALIGN | MEMINFO
+CHECKSUM	equ	-(GRUBMAGIC + FLAGS)
 ;TODO: Include all flags for future use.
-MODULEALIGN		equ		1	; 4 KB align
-MEMINFO			equ		2	; Memory information in the mem_* fields
-VIDMODES		equ		4	; Video modes information must be available to the kernel
+MODULEALIGN	equ	1	; 4 KB align
+MEMINFO		equ	2	; Memory information in the mem_* fields
+VIDMODES	equ	4	; Video modes information must be available to the kernel
 
 ;STACKSIZE	equ	0x4000	; 16 KB
 

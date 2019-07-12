@@ -20,7 +20,7 @@ extern(C) void* _Dmodule_ref;
 
 enum GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
-struct GRUB { align(1):
+struct GRUB_T { align(1):
 	uint flags;
 	uint mem_lower;
 	uint mem_upper;
@@ -79,49 +79,48 @@ void PRINT_LOGO() {
 extern(C)
 void kmain(uint magic, void *mbstruct) {
 	PRINT("Bootloader: ");
-	switch (magic) {
-	case GRUBMAGIC: PRINT("GRUB"); break;
-	default: PRINT("Unknown");
-	}
-	PRINT(" (");
+	PRINT("[");
 	PRINTU32H(magic);
-	PRINT(")");
-	PRINTLN;
+	PRINT("] ");
+	switch (magic) {
+	case GRUBMAGIC:
+		PRINT("GRUB @ ");
+		PRINTU32H(cast(uint)mbstruct);
+		PRINTLN;
+		break;
+	default: PRINTLN("Unknown");
+	}
 
-	PRINT("GRUB structure at ");
-	PRINTU32H(cast(uint)mbstruct);
-	PRINTLN;
+	PRINT("INIT: ");
 
-	PRINT("SETUP GDT: ");
 	k_init_gdt;
-	PRINTLN("OK");
+	PRINT("GDT ");
 
-	PRINT("SETUP IDT: ");
 	k_init_idt;
-	PRINTLN("OK");
+	PRINT("IDT ");
 
-	PRINT("SETUP PIC: ");
 	k_init_pic;
-	PRINTLN("OK");
+	PRINT("PIC ");
 
-	PRINT("SETUP PIT: ");
 	k_init_pit = 200;
-	PRINTLN("OK");
+	PRINT("PIT ");
 
-//	PRINT("Activating interrupts... ");
 //	asm { sti; }
-//	PRINTLN("OK");
+//	PRINT("INT ");
 
-	/*PRINT("Initiating keyboard...");
+	/*
 	InitiateKeyboard;
 	asm { xchg BX,BX; }
-	PRINTLN("OK");
+	PRINTLN("KB ");
 	while(1) {
 		char c = getc;
 		PRINT(c);
 	}*/
-	PRINTLN("Welcome to...");
+
+	PRINTLN;
+
 	PRINT_LOGO;
+
 	PRINTLN("HLT");
 	asm { hlt; }
 }

@@ -12,56 +12,64 @@ import kernel.vga;
 extern (C):
 __gshared:
 
-/// IDTR
-struct __idtptr { align(1):
-	ushort limit;
-	uint base;
+struct registers {
+   uint ds;                  // Data segment selector
+   uint edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
+   uint int_no, err_code;    // Interrupt number and error code (if applicable)
+   uint eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
 }
+
+/// IDTR
+struct IDTPTR_T { align(1):
+	ushort limit;
+	uint base; // 32-bit
+}
+static assert(IDTPTR_T.sizeof == 6);
 /// ISR, IA-32
-struct __idt { align(1):
+struct IDT_T { align(1):
 	ushort lo_base;
 	ushort selector;
 	ubyte reserved;
 	ubyte flags;
 	ushort hi_base;
 }
+static assert(IDT_T.sizeof == 8);
 
-__idtptr IDTptr;
-__idt[256] IDT;
+IDTPTR_T IDTptr;
+IDT_T[256] IDT;
 
 void k_init_idt() {
 	import kernel.utils : kmemset;
-	enum IDT_SIZE = __idt.sizeof * 256;
+	enum IDT_SIZE = IDT_T.sizeof * 256;
 
 	IDTptr.limit = IDT_SIZE - 1;
 	IDTptr.base = cast(uint)&IDT;
 
-	kmemset(&IDT, 0, IDT_SIZE);
 	void* def = &X86_EDEFAULT;
 
-	k_idt(0, &X86_EZERODIV); // #DE
-	k_idt(1, &X86_EDEBUG); // #DB
-	k_idt(2, &X86_ENMI); // NMI
-	k_idt(3, &X86_EBREAKPOINT); // #BP
-	k_idt(4, &X86_EOVERFLOW); // #OF
-	k_idt(5, &X86_EOUTBOUNDS); // #BR
-	k_idt(6, &X86_EINVCODE); // #UD
-	k_idt(7, def); // #NM
-	k_idt(8, def); // #DF
-	k_idt(9, def); // Reserved
-	k_idt(10, def); // #TS
-	k_idt(11, def); // #NP
-	k_idt(12, def); // #SS
-	k_idt(13, def); // #GP
-	k_idt(14, def); // #PF
-	k_idt(15, def); // Reserved
-	k_idt(16, def); // #MF
-	k_idt(17, def); // #AC
-	k_idt(18, def); // #MC
-	k_idt(19, def); // #XM
-	k_idt(20, def); // #VE
-	// Intel defines up to 20 which is #VM
-	// Otherwise, the rest up to 31 is reserved
+	k_idt(0, &X86_EZERODIV);	// #DE
+	k_idt(1, &X86_EDEBUG);	// #DB
+	k_idt(2, &X86_ENMI);	// NMI
+	k_idt(3, &X86_EBREAKPOINT);	// #BP
+	k_idt(4, &X86_EOVERFLOW);	// #OF
+	k_idt(5, &X86_EOUTBOUNDS);	// #BR
+	k_idt(6, &X86_EINVCODE);	// #UD
+	k_idt(7, def);	// #NM
+	k_idt(8, def);	// #DF
+	k_idt(9, def);	// Reserved
+	k_idt(10, def);	// #TS
+	k_idt(11, def);	// #NP
+	k_idt(12, def);	// #SS
+	k_idt(13, def);	// #GP
+	k_idt(14, def);	// #PF
+	k_idt(15, def);	// Reserved
+	k_idt(16, def);	// #MF
+	k_idt(17, def);	// #AC
+	k_idt(18, def);	// #MC
+	k_idt(19, def);	// #XM
+	k_idt(20, def);	// #VE
+
+	// Vectors 21..31 are reserved
 
 	k_idt(32, &IRQ0_HANDLER);
 	k_idt(33, &IRQ1_HANDLER);
@@ -71,8 +79,7 @@ void k_init_idt() {
 	for(      ; i <  32; ++i) k_idt(i, def);
 	for(i = 41; i < 255; ++i) k_idt(i, def);
 
-	//TODO: OS Services INT 60
-	//TODO: Console Services INT 61
+	//TODO: OS Services INT DDh
 
 	asm { lidt [IDTptr]; }
 }
@@ -88,17 +95,10 @@ private:
  *   flags = flags (defaults to 0x8E)
  */
 void k_idt(ubyte index, void* base, ushort s = 0x8, ubyte flags = 0x8E) {
-	/*
-	 * FLAGS
-	 *
-	 *
-	 *
-	 */
-
 	uint b = cast(uint)base;
-	__idt* entry = &IDT[index];
+	IDT_T* entry = &IDT[index];
 	entry.lo_base = b & 0xFFFF;
-	entry.hi_base = b >>> 16;
+	entry.hi_base = b >> 16;
 	entry.selector = s;
 	entry.flags = flags;
 }
@@ -212,13 +212,6 @@ void isr_common() {
 		sti;
 		iret;
 	}
-}
-
-struct registers {
-   uint ds;                  // Data segment selector
-   uint edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-   uint int_no, err_code;    // Interrupt number and error code (if applicable)
-   uint eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
 }
 
 void isr_handler(registers* regs) {

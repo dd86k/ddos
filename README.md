@@ -14,9 +14,9 @@ All the required tools are available for free.
 
 ### Optional but recommended
 
-- GNU Make (for automation)
-- GRUB 2 (for making the ISO)
-- QEMU (for testing)
+- GNU Make (for task automation)
+- GRUB 2 (to make the ISO)
+- QEMU (for testing ISO)
 
 ## Making the ISO
 
