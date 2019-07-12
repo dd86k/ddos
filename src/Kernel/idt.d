@@ -13,10 +13,10 @@ extern (C):
 __gshared:
 
 struct registers {
-   uint ds;                  // Data segment selector
-   uint edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-   uint int_no, err_code;    // Interrupt number and error code (if applicable)
-   uint eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
+	uint ds;                  // Data segment selector
+	uint edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
+	uint int_no, err_code;    // Interrupt number and error code (if applicable)
+	uint eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
 }
 
 /// IDTR
