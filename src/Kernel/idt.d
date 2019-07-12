@@ -5,13 +5,12 @@
 //TODO: IDT
 //http://jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
 
-module kernel_idt;
+module kernel.idt;
+
+import kernel.vga;
 
 extern (C):
 __gshared:
-
-__idtptr	IDTptr;
-__idt[256]	IDT;
 
 /// IDTR
 struct __idtptr { align(1):
@@ -27,15 +26,17 @@ struct __idt { align(1):
 	ushort hi_base;
 }
 
-void __k_init_idt() {
-	import kutils : kmemset;
+__idtptr IDTptr;
+__idt[256] IDT;
+
+void k_init_idt() {
+	import kernel.utils : kmemset;
 	enum IDT_SIZE = __idt.sizeof * 256;
 
 	IDTptr.limit = IDT_SIZE - 1;
 	IDTptr.base = cast(uint)&IDT;
 
 	kmemset(&IDT, 0, IDT_SIZE);
-	
 	void* def = &X86_EDEFAULT;
 
 	k_idt(0, &X86_EZERODIV); // #DE
@@ -73,10 +74,7 @@ void __k_init_idt() {
 	//TODO: OS Services INT 60
 	//TODO: Console Services INT 61
 
-	asm {
-		lea EAX, IDTptr;
-		lidt [EAX];
-	}
+	asm { lidt [IDTptr]; }
 }
 
 private:
@@ -97,8 +95,8 @@ void k_idt(ubyte index, void* base, ushort s = 0x8, ubyte flags = 0x8E) {
 	 *
 	 */
 
-	__idt* entry = &IDT[index];
 	uint b = cast(uint)base;
+	__idt* entry = &IDT[index];
 	entry.lo_base = b & 0xFFFF;
 	entry.hi_base = b >>> 16;
 	entry.selector = s;
@@ -224,7 +222,6 @@ struct registers {
 }
 
 void isr_handler(registers* regs) {
-	import kernel_con;
 	PRINT("INT ");
-	PRINTUDWH(regs.int_no);
+	PRINTU32H(regs.int_no);
 }

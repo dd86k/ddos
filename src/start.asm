@@ -7,7 +7,7 @@ global start
 ; Lazy D corner
 global _d_dso_registry, _d_switch_error
 
-extern main		; For Kernel.main.main
+extern kmain	; For Kernel.main.main
 ; Most D compilers need these externs.
 extern start_ctors, end_ctors, start_dtors, end_dtors
 
@@ -30,10 +30,10 @@ dd CHECKSUM
 
 section .text
 start:
-	cli			; Clear Interrupt flag
+	cli		; Clear Interrupt flag
 	push ebx	; GRUB multiboot structure
 	push eax	; GRUB multiboot magic
-	call main	; Call main in module Kernel.main
+	call kmain	; Call main in module Kernel.main
 
 cpuhalt:
 	hlt

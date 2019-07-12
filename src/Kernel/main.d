@@ -6,31 +6,47 @@
  * All the following subroutines follow the C calling convention.
  */
 
-module kernel_main;
+module kernel.main;
 
-import kernel_kb;
-import kernel_gdt;
-import kernel_idt;
-import kernel_con;
+import kernel.kb;
+import kernel.gdt;
+import kernel.idt;
+import kernel.pic;
+import kernel.vga;
 
 private:
 extern(C) void* _Dmodule_ref;
 
 enum GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
-private immutable string[] LOGO = [
-	"+------------------------------+",
-	"|                              |",
-	"|  DDDD   DDDD    OOO    SSSS  |",
-	"|  D   D  D   D  O   O  S      |",
-	"|  D   D  D   D  O   O   SSS   |",
-	"|  D   D  D   D  O   O      S  |",
-	"|  DDDD   DDDD    OOO   SSSS   |",
-	"|                              |",
-	"+------------------------------+"
-];
+struct GRUB { align(1):
+	uint flags;
+	uint mem_lower;
+	uint mem_upper;
+	uint boot_Device;
+	uint cmdline;
+	uint mods_count;
+	uint mods_addr;
+	uint num;
+	uint size;
+	uint addr;
+	uint shndx;
+	uint mmap_length;
+	uint mmap_addr;
+	uint drives_length;
+	uint drives_addr;
+	uint config_table;
+	uint boot_loader_name;
+	uint apm_table;
+	uint vbe_control_info;
+	uint vbe_mode_info;
+	uint vbe_mode;
+	uint vbe_interface_seg;
+	uint vbe_interface_off;
+	uint vbe_interface_len;
+}
 
-private immutable string[] LOGO_IMPROVED = [
+__gshared string[] LOGO = [
 "\xDA\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"~
 "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF",
 "\xB3                                    \xB3",
@@ -46,8 +62,8 @@ private immutable string[] LOGO_IMPROVED = [
 "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9"
 ];
 
-private void PRINT_LOGO() {
-	foreach(s; LOGO_IMPROVED) PRINTLN(s);
+void PRINT_LOGO() {
+	foreach(s; LOGO) PRINTLN(s);
 }
 
 /**
@@ -59,26 +75,41 @@ private void PRINT_LOGO() {
  *   magic = Multiboot magic (EAX)
  *   mbstruct = Multiboot structure location (EBX)
  */
-extern(C) void kmain(uint magic, uint mbstruct) {
+extern(C)
+void kmain(uint magic, GRUB *mbstruct) {
 	PRINT("Bootloader: ");
 	switch (magic) {
-		case GRUBMAGIC: PRINT("GRUB"); break;
-		default: PRINT("Unknown");
+	case GRUBMAGIC: PRINT("GRUB"); break;
+	default: PRINT("Unknown");
 	}
-	PRINT(" ("); PRINTUDWH(magic); PRINT(")"); PRINTLN;
-	PRINT("GRUB structure at "); PRINTUDWH(mbstruct); PRINTLN;
+	PRINT(" (");
+	PRINTU32H(magic);
+	PRINT(")");
+	PRINTLN;
 
-	PRINT("Setting up GDT... ");
-	InitGDT;
+	PRINT("GRUB structure at ");
+	PRINTU32H(cast(uint)mbstruct);
+	PRINTLN;
+
+	PRINT("SETUP GDT: ");
+	k_init_gdt;
 	PRINTLN("OK");
 
-	PRINT("Setting up IDT... ");
-	__k_init_idt;
+	PRINT("SETUP IDT: ");
+	k_init_idt;
 	PRINTLN("OK");
 
-	PRINT("Activating interrupts... ");
-	asm { sti; }
-	PRINTLN("OK");
+//	PRINT("SETUP PIC: ");
+//	k_init_pic;
+//	PRINTLN("OK");
+
+//	PRINT("SETUP PIT: ");
+//	k_init_pit;
+//	PRINTLN("OK");
+
+//	PRINT("Activating interrupts... ");
+//	asm { sti; }
+//	PRINTLN("OK");
 
 	/*PRINT("Initiating keyboard...");
 	InitiateKeyboard;
@@ -104,7 +135,9 @@ extern(C) void kmain(uint magic, uint mbstruct) {
 //http://gee.cs.oswego.edu/dl/html/malloc.html
 //glibc (v2.25):malloc/malloc.d@L2878
 public:
-extern(C) void* malloc(size_t bytes) {
+
+extern(C)
+void *malloc(size_t bytes) {
 //TODO: malloc
 	void* target;
 
@@ -126,7 +159,8 @@ extern(C) void* malloc(size_t bytes) {
  *   num = Number of bytes to move
  * Returns: Destination pointer (unchanged)
  */
-extern(C) void* memmove(void* des, const void* src, size_t num) {
+extern(C)
+void *memmove(void *des, const void *src, size_t num) {
 	ubyte* d = cast(ubyte*)des;
 	if (des > src) {
 		ubyte* s = cast(ubyte*)src + num;
@@ -152,8 +186,9 @@ extern(C) void* memmove(void* des, const void* src, size_t num) {
  *   num = Number of bytes to move
  * Returns: Destination pointer (unchanged)
  */
-extern(C) void* memcpy(void* des, const void* src, size_t num) {
-	ubyte* d = cast(ubyte*)des;
+extern(C)
+void *memcpy(void *des, const void *src, size_t num) {
+	ubyte *d = cast(ubyte*)des;
 	if (des > src) {
 		ubyte* s = cast(ubyte*)src + num;
 		while (num--) *d-- = *s--;

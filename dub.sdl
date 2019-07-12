@@ -17,16 +17,15 @@ buildType "debug-verbose" {
 }
 
 buildType "debug" {
-	targetType "executable"
 	buildOptions "debugMode" "debugInfoC"
-	dflags "-enable-color" "-defaultlib=" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
-	lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/boot.o" "bin/kernel.o"
+	dflags "-enable-color" "-defaultlib=" "-Oz" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-transition=intpromote" "-betterC" "-singleobj"
+#	lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/boot.o" "bin/kernel.o"
 }
 
 buildType "debug-grub" {
 	targetType "executable"
 	buildOptions "debugMode" "debugInfoC"
-	dflags "-enable-color" "-defaultlib=" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC"
+	dflags "-enable-color" "-defaultlib=" "-march=x86" "-disable-red-zone" "-boundscheck=off" "-code-model=kernel" "-c" "-fthread-model=local-dynamic" "-transition=intpromote" "-betterC" "-singleobj"
 	lflags "-T" "src/linker.ld" "-m elf_i386" "-o bin/kernel.bin" "bin/start.o" "bin/kernel.o"
 }
 

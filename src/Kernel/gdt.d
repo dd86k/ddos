@@ -2,11 +2,11 @@
  * Global Descriptor Table
  */
 
-module kernel_gdt;
+module kernel.gdt;
 
 __gshared gdt_ptr GDTp;
 __gshared ulong[5] GDT;
-align(1) struct gdt_ptr {
+struct gdt_ptr { align(1):
     ushort limit;
     uint base;
 }
@@ -14,7 +14,7 @@ align(1) struct gdt_ptr {
 /**
  * Constructs GDT
  */
-void InitGDT() { 
+void k_init_gdt() { 
     GDTp.limit = 8 * 5;
     GDTp.base = cast(uint)&GDT;
     // Flat memory model
@@ -23,9 +23,7 @@ void InitGDT() {
     k_gdt(2, 0, 0xFFFFFFFF, 0x92); // Data seg
     k_gdt(3, 0, 0xFFFFFFFF, 0xFA); // User-mode code seg
     k_gdt(4, 0, 0xFFFFFFFF, 0xF2); // User-mode data seg
-    asm {
-        lgdt [GDTp];
-    }
+    asm { lgdt [GDTp]; }
 }
 
 private void k_gdt(int gate, uint base, uint limit, ushort flag) {

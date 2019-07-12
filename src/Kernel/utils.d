@@ -1,3 +1,5 @@
+module kernel.utils;
+
 __gshared:
 extern (C):
 

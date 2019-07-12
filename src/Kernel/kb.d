@@ -1,4 +1,4 @@
-module kernel_kb;
+module kernel.kb;
 
 //http://www.computer-engineering.org/ps2keyboard/
 //http://www.computer-engineering.org/ps2keyboard/scancodes2.html
