@@ -7,7 +7,6 @@
 
 default:
 	@make asm
-#	ldc2 -enable-color -defaultlib= -Oz -march=x86 -disable-red-zone -boundscheck=off -code-model=kernel -c -fthread-model=local-dynamic -of=bin/kernel.o src/kernel/gdt.d src/kernel/idt.d src/kernel/kb.d src/kernel/main.d
 	@dub build -a x86 --compiler=ldc2
 	@mv libddos.a bin/kernel.o
 	@make link_grub
@@ -17,13 +16,17 @@ all:
 	@make iso
 
 asm:
-	@nasm -f elf32 -o bin/start.o src/start.asm
+	@nasm -f elf32 -o bin/start.o src/boot/i386-grub.asm
 
 link_grub:
 	@ld -T src/linker.ld -m elf_i386 -o bin/kernel.bin bin/start.o bin/kernel.o
 
+#################
+# SETUPS
+#################
+
 setup-apt:
-	@apt install ldc2 nasm make xorriso qemu -y
+	@sudo apt install ldc2 nasm make xorriso qemu -y
 
 #################
 # ISO
@@ -41,7 +44,7 @@ test:
 	@qemu-system-i386 -cdrom ddos.iso
 
 #################
-# ETC.
+# MISC.
 #################
 
 clean:

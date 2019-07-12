@@ -1,5 +1,5 @@
 /*
- * main.d : Kernel start.
+ * Kernel start.
  *
  * The start.asm has the grub header, so no need to define it here.
  *
@@ -16,7 +16,6 @@ import kernel.pit;
 import kernel.vga;
 
 private:
-extern(C) void* _Dmodule_ref;
 
 enum GRUBMAGIC = 0x2BADB002; /// GRUB magic after menu selection
 
@@ -78,7 +77,7 @@ void PRINT_LOGO() {
  */
 extern(C)
 void kmain(uint magic, void *mbstruct) {
-	PRINT("Bootloader: ");
+	PRINT("BOOT: ");
 	PRINT("[");
 	PRINTU32H(magic);
 	PRINT("] ");
@@ -102,7 +101,7 @@ void kmain(uint magic, void *mbstruct) {
 	k_init_pic;
 	PRINT("PIC ");
 
-	k_init_pit = 200;
+	k_init_pit(200);
 	PRINT("PIT ");
 
 //	asm { sti; }
