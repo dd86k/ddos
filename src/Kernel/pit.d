@@ -1,0 +1,47 @@
+/**
+ * Programmable Interrupt Timer.
+ */
+module kernel.pit;
+
+enum : ubyte {
+	PIT_REG_COUNTER0	= 0x40,
+	PIT_REG_COUNTER1	= 0x41,
+	PIT_REG_COUNTER2	= 0x42,
+	PIT_REG_COMMAND		= 0x43,
+	PIT_OCW_MASK_BINCOUNT	= 1,	// 00000001
+	PIT_OCW_MASK_MODE	= 0xE,	// 00001110
+	PIT_OCW_MASK_RL	= 0x30,	// 00110000
+	PIT_OCW_MASK_COUNTER	= 0xC0,	// 11000000
+	PIT_OCW_BINCOUNT_BINARY	= 0,	// 0
+	PIT_OCW_BINCOUNT_BCD	= 1,	// 1
+	PIT_OCW_MODE_TERMINALCOUNT	= 0,	// 0000
+	PIT_OCW_MODE_ONESHOT	= 0x2,	// 0010
+	PIT_OCW_MODE_RATEGEN	= 0x4,	// 0100
+	PIT_OCW_MODE_SQUAREWAVEGEN	= 0x6,	// 0110
+	PIT_OCW_MODE_SOFTWARETRIG	= 0x8,	// 1000
+	PIT_OCW_MODE_HARDWARETRIG	= 0xA,	// 1010
+	PIT_OCW_RL_LATCH	= 0,	// 000000
+	PIT_OCW_RL_LSBONLY	= 0x10,	// 010000
+	PIT_OCW_RL_MSBONLY	= 0x20,	// 100000
+	PIT_OCW_RL_DATA	= 0x30,	// 110000
+	PIT_OCW_COUNTER_0	= 0,	// 00000000
+	PIT_OCW_COUNTER_1	= 0x40,	// 01000000
+	PIT_OCW_COUNTER_2	= 0x80,	// 10000000
+}
+
+void k_init_pit(uint freq) { // with timer
+	if (freq == 0)
+		return;
+
+	ushort divisor = cast(ushort)(1193181 / freq);
+
+	asm {
+		mov AL, 0x36;
+		out PIT_REG_COMMAND, AL;
+
+		mov AX, divisor;
+		out 0x40, AL;
+		shr AX, 8;
+		out 0x40, AL;
+	}
+}

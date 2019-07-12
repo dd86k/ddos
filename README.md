@@ -1,24 +1,6 @@
 # ddos
 
-Hi! I'm making a kernel+OS for myself, mostly for educational reasons, like getting a good feel of going bare-bone.
-
-I also want to revive the MS-DOS feel in an 32-bit (and possibly 64-bit) environment.
-
-| Can you [...] | yet?  |
-|---|---|
-| Use it? | No |
-| Install it? | No |
-| Use its bootloader? | No |
-| Run programs? | No |
-| Compile stuff? | No |
-| Play games? | No |
-| Have fun with it? | No |
-
-# TODO
-
-- Everything
-
-I'll complete this list later on.
+Felt like doing something to goof around.
 
 # Compiling the project
 
@@ -36,16 +18,14 @@ All the required tools are available for free.
 - GRUB 2 (for making the ISO)
 - QEMU (for testing)
 
-## Compiling
-
-By default, running `make` with compile everything into `bin/`.
-
 ## Making the ISO
 
-Running `make iso` will produce `ddos.iso` in the root project directory. Requires binaries in compiled from bin/.
+Running `make iso` will produce `ddos.iso` in the root project directory.
+Requires binaries in compiled from bin/.
 
 ## Testing the ISO
 
 Running `make test` will boot qemu-system-i386 with the ddos.iso CDROM.
 
-The OS also runs in `qemu-system-x86_64` obviously because it's still in EXTENDED mode (32-bit) when GRUB boots up.
+The OS also runs in `qemu-system-x86_64` obviously because it's still in
+protected mode (32-bit) when GRUB boots up.

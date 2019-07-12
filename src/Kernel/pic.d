@@ -1,3 +1,6 @@
+/**
+ * Programmable Interrupt Controller.
+ */
 module kernel.pic;
 
 extern (C):
@@ -25,7 +28,7 @@ void k_init_pic() {
 		in AL, PIC2_DATA; // ?
 
 		// Init ICW1
-		mov AL, ICW1_INIT | ICW1_ICW4;
+		mov AL, ICW1_INIT + ICW1_ICW4;
 		out PIC1_COMMAND, AL;
 		out PIC2_COMMAND, AL;
 

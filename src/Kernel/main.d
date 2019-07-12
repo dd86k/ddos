@@ -12,6 +12,7 @@ import kernel.kb;
 import kernel.gdt;
 import kernel.idt;
 import kernel.pic;
+import kernel.pit;
 import kernel.vga;
 
 private:
@@ -76,7 +77,7 @@ void PRINT_LOGO() {
  *   mbstruct = Multiboot structure location (EBX)
  */
 extern(C)
-void kmain(uint magic, GRUB *mbstruct) {
+void kmain(uint magic, void *mbstruct) {
 	PRINT("Bootloader: ");
 	switch (magic) {
 	case GRUBMAGIC: PRINT("GRUB"); break;
@@ -99,13 +100,13 @@ void kmain(uint magic, GRUB *mbstruct) {
 	k_init_idt;
 	PRINTLN("OK");
 
-//	PRINT("SETUP PIC: ");
-//	k_init_pic;
-//	PRINTLN("OK");
+	PRINT("SETUP PIC: ");
+	k_init_pic;
+	PRINTLN("OK");
 
-//	PRINT("SETUP PIT: ");
-//	k_init_pit;
-//	PRINTLN("OK");
+	PRINT("SETUP PIT: ");
+	k_init_pit = 200;
+	PRINTLN("OK");
 
 //	PRINT("Activating interrupts... ");
 //	asm { sti; }
