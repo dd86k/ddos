@@ -72,8 +72,12 @@ void PRINTLN(char c) {
 	CURSOR_NL;
 }
 
+void PRINTF(char *s) { //TODO: PRINTF
+	char [256]b = void;
+}
+
 /// Print and unsigned double word
-void PRINTU32(uint l) {
+void PRINTU32(uint l) { //TODO: PRINTU32
 	
 }
 

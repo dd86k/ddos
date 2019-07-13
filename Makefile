@@ -41,7 +41,7 @@ iso:
 #################
 
 test:
-	@qemu-system-i386 -cdrom ddos.iso
+	@qemu-system-i386 -cdrom ddos.iso -curses
 
 #################
 # MISC.

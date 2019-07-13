@@ -28,30 +28,31 @@ void k_init_pic() {
 		in AL, PIC2_DATA; // ?
 
 		// Init ICW1
-		mov AL, ICW1_INIT + ICW1_ICW4;
-		out PIC1_COMMAND, AL;
-		out PIC2_COMMAND, AL;
+		mov AL, ICW1_INIT | ICW1_ICW4; // 11h
+		out PIC1_COMMAND, AL; // Init master PIC
+		out PIC2_COMMAND, AL; // Init slave PIC
 
 		// Init ICW2
 		mov AL, 0x20;
-		out PIC1_DATA, AL;
-		mov AL, 0x70;
-		out PIC2_DATA, AL;
+		out PIC1_DATA, AL; // INT 20h -> IRQ0
+		//mov AL, 0x70;
+		mov AL, 0x28;
+		out PIC2_DATA, AL; // INT 28h -> IRQ8
 
 		// Init ICW3
 		mov AL, 4;
-		out PIC1_COMMAND, AL;
+		out PIC1_COMMAND, AL; // IRQ line 2 -> master
 		mov AL, 2;
-		out PIC2_COMMAND, AL;
+		out PIC2_COMMAND, AL; // IRQ line 2 -> slace
 
 		// Init ICW4
-		mov AL, ICW4_8086;
-		out 0x21, AL;
-		out 0xA1, AL;
+		mov AL, ICW4_8086; // 80x86 mode
+		out PIC1_DATA, AL;
+		out PIC2_DATA, AL;
 
 		// NMI
 		mov AL, 0;
-		out 0x21, AL;
-		out 0xA1, AL;
+		out PIC1_DATA, AL;
+		out PIC2_DATA, AL;
 	}
 }

@@ -98,30 +98,29 @@ void kmain(uint magic, void *mbstruct) {
 	k_init_idt;
 	PRINT("IDT ");
 
-	k_init_pic;
-	PRINT("PIC ");
+//	k_init_pic;
+//	PRINT("PIC ");
 
-	k_init_pit(200);
-	PRINT("PIT ");
+//	k_init_pit(200);
+//	PRINT("PIT ");
 
-//	asm { sti; }
-//	PRINT("INT ");
+	asm { sti; }
+	PRINT("INT ");
 
-	/*
-	InitiateKeyboard;
-	asm { xchg BX,BX; }
+	k_init_kb;
 	PRINTLN("KB ");
-	while(1) {
-		char c = getc;
-		PRINT(c);
-	}*/
 
 	PRINTLN;
 
 	PRINT_LOGO;
 
-	PRINTLN("HLT");
-	asm { hlt; }
+	while(1) {
+		char c = getc;
+		PRINTC(c);
+	}
+
+//	PRINTLN("HLT");
+//	asm { hlt; }
 }
 
 /******************************************************************************

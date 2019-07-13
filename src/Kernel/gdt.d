@@ -4,39 +4,44 @@
 
 module kernel.gdt;
 
-__gshared GDTPTR_T GDTptr;
-__gshared ulong[5] GDT;
+extern (C):
+__gshared:
+
 struct GDTPTR_T { align(1):
 	ushort limit;
 	uint base;
 }
 static assert(GDTPTR_T.sizeof == 6);
 struct GDT_T { align(1):
-	ushort seg_low;
+	ushort limit_low;
 	ushort base_low;
 	ubyte base_mid;
-	ubyte flags;
-	ubyte seg_high;
+	ubyte access;
+	ubyte granularity;
 	ubyte base_high;
 }
 static assert(GDT_T.sizeof == 8);
+
+GDTPTR_T GDTptr;
+//ulong[5] GDT;
+GDT_T [5]GDT;
 
 /**
  * Constructs GDT
  */
 void k_init_gdt() { 
-	GDTptr.limit = GDT.sizeof;
+	GDTptr.limit = GDT.sizeof - 1;
 	GDTptr.base = cast(uint)&GDT;
 	// Flat memory model
-	k_gdt(0, 0, 0, 0); // Null seg
-	k_gdt(1, 0, 0xFFFFFFFF, 0x9A); // Code seg
-	k_gdt(2, 0, 0xFFFFFFFF, 0x92); // Data seg
-	k_gdt(3, 0, 0xFFFFFFFF, 0xFA); // User-mode code seg
-	k_gdt(4, 0, 0xFFFFFFFF, 0xF2); // User-mode data seg
+	k_gdt(0, 0, 0, 0, 0); // Null seg
+	k_gdt(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Code seg
+	k_gdt(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Data seg
+	k_gdt(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User-mode code seg
+	k_gdt(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User-mode data seg
 	asm { lgdt [GDTptr]; }
 }
 
-private void k_gdt(int gate, uint base, uint limit, ushort flag) {
+private void k_gdt(int gate, uint base, uint limit, ushort access, ushort gran) {
 	uint* desc = cast(uint*)&GDT[gate];
 
 	/*
@@ -62,12 +67,14 @@ private void k_gdt(int gate, uint base, uint limit, ushort flag) {
 	 *   1: segment limit counts 4-KiB units)
 	 */
 
-	//TODO: use GDT_T structure instead
-	desc[0] =  limit        & 0x000F_0000; // Limit[16:19]
-	desc[0] |= (flag << 8)  & 0x00F0_FF00; // Flags
-	desc[0] |= (base >> 16) & 0x0000_00FF; // Base[16:23]
-	desc[0] |= base         & 0xFF00_0000; // Base[24:31]
+	GDT_T *gdt = &GDT[gate];
+	gdt.base_low = cast(ushort)base;
+	gdt.base_mid = cast(ubyte)(base >> 16);
+	gdt.base_high = cast(ubyte)(base >> 24);
 
-	desc[1] |= base << 16;     // Base[ 0:15]
-	desc[1] |= limit & 0xFFFF; // Limit[0:15]
+	gdt.limit_low = cast(ushort)limit;
+	gdt.granularity = (limit >> 16) & 0x0F;
+
+	gdt.granularity |= gran & 0xF0;
+	gdt.access = cast(ubyte)access;
 }
